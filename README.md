@@ -38,6 +38,8 @@ Diseño e implementación de una base de datos relacional en **PostgreSQL 18** p
 ## 11. Documentación Complementaria
 
 - [Procedimiento de recuperación post incidente](procedimientos_almacenados.md)
+- [Implementación DDD en PostgreSQL (mapeo y decisiones)](DDD_IMPLEMENTACION.md)
+- [Script SQL DDD para ejecutar en pgAdmin4](ddd_banco_pgadmin.sql)
 
 ---
 
