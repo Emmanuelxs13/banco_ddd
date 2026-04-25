@@ -18,6 +18,7 @@
 9. [Consultas SQL](#9-consultas-sql)
 10. [Conclusión](#10-conclusión)
 11. [Documentación Complementaria](#11-documentación-complementaria)
+12. [Ejecución DDD y Pruebas](#12-ejecución-ddd-y-pruebas)
 
 ---
 
@@ -38,6 +39,102 @@ Diseño e implementación de una base de datos relacional en **PostgreSQL 18** p
 ## 11. Documentación Complementaria
 
 - [Procedimiento de recuperación post incidente](procedimientos_almacenados.md)
+- [Implementación DDD en PostgreSQL (mapeo y decisiones)](DDD_IMPLEMENTACION.md)
+- [Script SQL DDD para ejecutar en pgAdmin4](ddd_banco_pgadmin.sql)
+- [Script SQL para poblar datos de prueba](seed_ddd_banco.sql)
+- [Guía de pruebas SQL paso a paso](README_PRUEBAS_DB.md)
+
+---
+
+## 12. Ejecución DDD y Pruebas
+
+Esta sección explica el flujo completo para ejecutar el modelo base, aplicar la capa DDD, poblar datos de prueba y validar comportamiento funcional.
+
+### 12.1 Orden obligatorio de ejecución
+
+Ejecuta los archivos **en este orden** dentro de pgAdmin4 (Query Tool):
+
+1. `banco_db.sql`  
+   Restaura/crea el esquema base del banco (tablas, constraints, datos iniciales).
+2. `ddd_banco_pgadmin.sql`  
+   Aplica la capa DDD: invariantes con triggers, funciones de dominio y procedimientos almacenados.
+3. `seed_ddd_banco.sql`  
+   Carga datos de prueba idempotentes para probar préstamos, transferencias empresariales y vencimientos.
+4. `README_PRUEBAS_DB.md`  
+   Ejecuta los bloques SQL de pruebas funcionales y negativas en el orden propuesto.
+
+---
+
+### 12.2 Paso a paso en pgAdmin4
+
+#### Paso 1 — Abrir Query Tool
+
+1. En pgAdmin, selecciona la base de datos donde restauraste `banco_db.sql`.
+2. Click derecho sobre la base → **Query Tool**.
+
+#### Paso 2 — Ejecutar `ddd_banco_pgadmin.sql`
+
+1. Abre el archivo `ddd_banco_pgadmin.sql` en el Query Tool.
+2. Ejecuta todo el script.
+3. Verifica que finalice sin errores.
+
+Consultas rápidas de verificación:
+
+```sql
+-- Estados nuevos de transferencia
+SELECT id_estado, tipo_estado, nombre_estado
+FROM public.estado_general
+WHERE tipo_estado = 'TRANSFERENCIA'
+  AND nombre_estado IN ('EN_ESPERA_APROBACION', 'EJECUTADA', 'VENCIDA');
+
+-- Parámetro de umbral de transferencia empresarial
+SELECT *
+FROM public.dominio_parametro
+WHERE clave = 'UMBRAL_TRANSFERENCIA_EMPRESA';
+```
+
+#### Paso 3 — Ejecutar `seed_ddd_banco.sql`
+
+1. Abre `seed_ddd_banco.sql`.
+2. Ejecuta todo el script.
+3. Verifica que se crearon datos de prueba DDD.
+
+Consultas rápidas de verificación:
+
+```sql
+SELECT numero_identificacion, nombre_completo
+FROM public.cliente_persona
+WHERE numero_identificacion IN ('DDDREP001', 'DDDCLI001', 'DDDANL001');
+
+SELECT numero_cuenta, saldo_actual
+FROM public.cuenta_bancaria
+WHERE numero_cuenta IN ('DDDCTA001', 'DDDCTA002', 'DDDCTAEMP1');
+```
+
+#### Paso 4 — Ejecutar pruebas funcionales
+
+1. Abre `README_PRUEBAS_DB.md`.
+2. Copia y ejecuta los bloques SQL **en orden**:
+   - verificación inicial,
+   - flujo de préstamo,
+   - transferencia empresarial con aprobación,
+   - vencimiento automático,
+   - pruebas negativas.
+
+---
+
+### 12.3 Resultado esperado por bloque de pruebas
+
+- **Flujo de préstamo**: solicitud en `EN_ESTUDIO`, luego `APROBADO` y finalmente `DESEMBOLSADO`, con aumento de saldo en cuenta destino.
+- **Transferencia empresarial alto monto**: inicia en `EN_ESPERA_APROBACION`, luego supervisor la lleva a `EJECUTADA` (o `RECHAZADA`).
+- **Vencimiento automático**: transferencias con más de 60 minutos en espera pasan a `VENCIDA` y quedan auditadas en bitácora.
+- **Pruebas negativas**: deben lanzar excepciones (por ejemplo, cuentas iguales o aprobación de préstamo por rol inválido).
+
+---
+
+### 12.4 Recomendación para repetir pruebas
+
+Si deseas repetir el flujo completo desde cero, crea una base nueva y vuelve a ejecutar los scripts en el orden indicado. Esto evita contaminación por datos acumulados de corridas anteriores.
 
 ---
 
