@@ -1,0 +1,972 @@
+openapi: 3.0.3
+info:
+  title: Banco Core API - DDD Banking System
+  description: |
+    API REST del sistema bancario Banco Core implementado con Domain-Driven Design.
+    Cubre los módulos de Clientes, Cuentas, Préstamos, Transferencias y Auditoría.
+  version: 1.0.0
+  contact:
+    name: Emmanuel Berrio Jimenez
+    email: emmanuel.berrio@banco.com
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Servidor de desarrollo
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        statusCode:
+          type: integer
+
+    RolSistema:
+      type: object
+      properties:
+        id_rol:
+          type: integer
+        nombre_rol:
+          type: string
+      required: [id_rol, nombre_rol]
+
+    EstadoGeneral:
+      type: object
+      properties:
+        id_estado:
+          type: integer
+        tipo_estado:
+          type: string
+          enum: [USUARIO, CUENTA, PRESTAMO, TRANSFERENCIA]
+        nombre_estado:
+          type: string
+      required: [id_estado, tipo_estado, nombre_estado]
+
+    ClientePersona:
+      type: object
+      properties:
+        id_persona:
+          type: integer
+        numero_identificacion:
+          type: string
+        nombre_completo:
+          type: string
+        correo_electronico:
+          type: string
+          format: email
+        telefono:
+          type: string
+        fecha_nacimiento:
+          type: string
+          format: date
+        direccion:
+          type: string
+      required: [numero_identificacion, nombre_completo, correo_electronico, telefono, fecha_nacimiento, direccion]
+
+    CreateClientePersonaDTO:
+      type: object
+      properties:
+        numero_identificacion:
+          type: string
+        nombre_completo:
+          type: string
+        correo_electronico:
+          type: string
+          format: email
+        telefono:
+          type: string
+        fecha_nacimiento:
+          type: string
+          format: date
+        direccion:
+          type: string
+        ciudad:
+          type: string
+      required: [numero_identificacion, nombre_completo, correo_electronico, telefono, fecha_nacimiento, direccion]
+
+    ClienteEmpresa:
+      type: object
+      properties:
+        id_empresa:
+          type: integer
+        nit:
+          type: string
+        razon_social:
+          type: string
+        correo_electronico:
+          type: string
+        telefono:
+          type: string
+        direccion:
+          type: string
+        representante_legal_id:
+          type: integer
+      required: [nit, razon_social, correo_electronico, telefono, direccion, representante_legal_id]
+
+    CreateClienteEmpresaDTO:
+      type: object
+      properties:
+        nit:
+          type: string
+        razon_social:
+          type: string
+        correo_electronico:
+          type: string
+        telefono:
+          type: string
+        direccion:
+          type: string
+        ciudad:
+          type: string
+        representante_legal_id:
+          type: integer
+      required: [nit, razon_social, correo_electronico, telefono, direccion, representante_legal_id]
+
+    UsuarioSistema:
+      type: object
+      properties:
+        id_usuario:
+          type: integer
+        id_relacionado:
+          type: integer
+        tipo_relacion:
+          type: string
+          enum: [PERSONA, EMPRESA]
+        nombre_completo:
+          type: string
+        id_identificacion:
+          type: string
+        correo_electronico:
+          type: string
+        telefono:
+          type: string
+        id_rol:
+          type: integer
+        id_estado:
+          type: integer
+        nombre_rol:
+          type: string
+        nombre_estado:
+          type: string
+      required: [id_usuario, nombre_completo, correo_electronico, id_rol, id_estado]
+
+    CuentaBancaria:
+      type: object
+      properties:
+        numero_cuenta:
+          type: string
+        tipo_cuenta:
+          type: string
+        id_titular:
+          type: integer
+        tipo_titular:
+          type: string
+          enum: [PERSONA, EMPRESA]
+        saldo_actual:
+          type: number
+          format: double
+        moneda:
+          type: string
+        id_estado:
+          type: integer
+        nombre_estado:
+          type: string
+        fecha_apertura:
+          type: string
+          format: date
+        codigo_producto:
+          type: string
+      required: [numero_cuenta, tipo_cuenta, id_titular, tipo_titular, saldo_actual, moneda, id_estado]
+
+    Prestamo:
+      type: object
+      properties:
+        id_prestamo:
+          type: integer
+        tipo_prestamo:
+          type: string
+        id_cliente_solicitante:
+          type: integer
+        tipo_cliente:
+          type: string
+        monto_solicitado:
+          type: number
+        monto_aprobado:
+          type: number
+          nullable: true
+        tasa_interes:
+          type: number
+        plazo_meses:
+          type: integer
+        id_estado:
+          type: integer
+        nombre_estado:
+          type: string
+        fecha_aprobacion:
+          type: string
+          format: date
+          nullable: true
+        fecha_desembolso:
+          type: string
+          format: date
+          nullable: true
+        cuenta_destino_desembolso:
+          type: string
+        id_usuario_creador:
+          type: integer
+        id_usuario_aprobador:
+          type: integer
+          nullable: true
+      required: [id_prestamo, tipo_prestamo, id_cliente_solicitante, tipo_cliente, monto_solicitado, tasa_interes, plazo_meses, id_estado]
+
+    Transferencia:
+      type: object
+      properties:
+        id_transferencia:
+          type: integer
+        cuenta_origen:
+          type: string
+        cuenta_destino:
+          type: string
+        monto:
+          type: number
+        id_estado:
+          type: integer
+        nombre_estado:
+          type: string
+        id_usuario_creador:
+          type: integer
+        id_usuario_aprobador:
+          type: integer
+          nullable: true
+        fecha_creacion:
+          type: string
+          format: date-time
+        fecha_aprobacion:
+          type: string
+          format: date-time
+          nullable: true
+        descripcion:
+          type: string
+      required: [id_transferencia, cuenta_origen, cuenta_destino, monto, id_estado, id_usuario_creador, fecha_creacion]
+
+    BitacoraOperacion:
+      type: object
+      properties:
+        id_bitacora:
+          type: integer
+        entidad_afectada:
+          type: string
+        id_entidad:
+          type: integer
+        accion:
+          type: string
+        usuario_responsable:
+          type: integer
+          nullable: true
+        fecha_evento:
+          type: string
+          format: date-time
+        detalle:
+          type: string
+      required: [id_bitacora, entidad_afectada, id_entidad, accion, fecha_evento]
+
+    SolicitarPrestamoDTO:
+      type: object
+      properties:
+        tipo_prestamo:
+          type: string
+        id_cliente_solicitante:
+          type: integer
+        tipo_cliente:
+          type: string
+          enum: [PERSONA, EMPRESA]
+        monto_solicitado:
+          type: number
+        tasa_interes:
+          type: number
+        plazo_meses:
+          type: integer
+        id_usuario_creador:
+          type: integer
+        cuenta_destino_desembolso:
+          type: string
+      required: [tipo_prestamo, id_cliente_solicitante, tipo_cliente, monto_solicitado, tasa_interes, plazo_meses, id_usuario_creador, cuenta_destino_desembolso]
+
+    ResolverPrestamoDTO:
+      type: object
+      properties:
+        id_prestamo:
+          type: integer
+        id_usuario_aprobador:
+          type: integer
+        aprobar:
+          type: boolean
+        monto_aprobado:
+          type: number
+      required: [id_prestamo, id_usuario_aprobador, aprobar]
+
+    CrearTransferenciaDTO:
+      type: object
+      properties:
+        cuenta_origen:
+          type: string
+        cuenta_destino:
+          type: string
+        monto:
+          type: number
+        id_usuario_creador:
+          type: integer
+        descripcion:
+          type: string
+      required: [cuenta_origen, cuenta_destino, monto, id_usuario_creador]
+
+    ResolverTransferenciaDTO:
+      type: object
+      properties:
+        id_transferencia:
+          type: integer
+        id_usuario_aprobador:
+          type: integer
+        aprobar:
+          type: boolean
+        motivo:
+          type: string
+      required: [id_transferencia, id_usuario_aprobador, aprobar]
+
+    DashboardStats:
+      type: object
+      properties:
+        total_clientes:
+          type: integer
+        total_cuentas:
+          type: integer
+        total_prestamos_activos:
+          type: integer
+        total_transferencias:
+          type: integer
+        saldo_total:
+          type: number
+        prestamos_desembolsados:
+          type: number
+        transferencias_ultimo_mes:
+          type: integer
+
+paths:
+  /auth/login:
+    post:
+      tags: [Autenticación]
+      summary: Iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                correo:
+                  type: string
+                contrasena:
+                  type: string
+              required: [correo, contrasena]
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  usuario:
+                    $ref: '#/components/schemas/UsuarioSistema'
+        '401':
+          description: Credenciales inválidas
+
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Obtener estadísticas del dashboard
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Estadísticas obtenidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStats'
+
+  /clientes/persona:
+    get:
+      tags: [Clientes Persona]
+      summary: Listar clientes persona
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de clientes persona
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClientePersona'
+    post:
+      tags: [Clientes Persona]
+      summary: Crear cliente persona
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClientePersonaDTO'
+      responses:
+        '201':
+          description: Cliente creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientePersona'
+
+  /clientes/persona/{id}:
+    get:
+      tags: [Clientes Persona]
+      summary: Obtener cliente persona por ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cliente encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientePersona'
+
+  /clientes/empresa:
+    get:
+      tags: [Clientes Empresa]
+      summary: Listar clientes empresa
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de clientes empresa
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClienteEmpresa'
+    post:
+      tags: [Clientes Empresa]
+      summary: Crear cliente empresa
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClienteEmpresaDTO'
+      responses:
+        '201':
+          description: Empresa creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteEmpresa'
+
+  /clientes/empresa/{id}:
+    get:
+      tags: [Clientes Empresa]
+      summary: Obtener cliente empresa por ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Empresa encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteEmpresa'
+
+  /usuarios:
+    get:
+      tags: [Usuarios]
+      summary: Listar usuarios del sistema
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UsuarioSistema'
+    post:
+      tags: [Usuarios]
+      summary: Crear usuario
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_relacionado:
+                  type: integer
+                tipo_relacion:
+                  type: string
+                  enum: [PERSONA, EMPRESA]
+                nombre_completo:
+                  type: string
+                id_identificacion:
+                  type: string
+                correo_electronico:
+                  type: string
+                telefono:
+                  type: string
+                id_rol:
+                  type: integer
+                contrasena:
+                  type: string
+              required: [id_relacionado, tipo_relacion, nombre_completo, id_identificacion, correo_electronico, id_rol, contrasena]
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioSistema'
+
+  /usuarios/{id}:
+    get:
+      tags: [Usuarios]
+      summary: Obtener usuario por ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioSistema'
+
+  /cuentas:
+    get:
+      tags: [Cuentas]
+      summary: Listar cuentas bancarias
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: titular_id
+          in: query
+          schema:
+            type: integer
+        - name: tipo_titular
+          in: query
+          schema:
+            type: string
+            enum: [PERSONA, EMPRESA]
+      responses:
+        '200':
+          description: Lista de cuentas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CuentaBancaria'
+    post:
+      tags: [Cuentas]
+      summary: Crear cuenta bancaria
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                numero_cuenta:
+                  type: string
+                tipo_cuenta:
+                  type: string
+                id_titular:
+                  type: integer
+                tipo_titular:
+                  type: string
+                  enum: [PERSONA, EMPRESA]
+                moneda:
+                  type: string
+                codigo_producto:
+                  type: string
+              required: [numero_cuenta, tipo_cuenta, id_titular, tipo_titular, moneda, codigo_producto]
+      responses:
+        '201':
+          description: Cuenta creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuentaBancaria'
+
+  /cuentas/{numero_cuenta}:
+    get:
+      tags: [Cuentas]
+      summary: Obtener cuenta por número
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: numero_cuenta
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cuenta encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuentaBancaria'
+
+  /prestamos:
+    get:
+      tags: [Préstamos]
+      summary: Listar préstamos
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id_cliente
+          in: query
+          schema:
+            type: integer
+        - name: estado
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de préstamos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Prestamo'
+    post:
+      tags: [Préstamos]
+      summary: Solicitar préstamo
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitarPrestamoDTO'
+      responses:
+        '201':
+          description: Préstamo solicitado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prestamo'
+
+  /prestamos/{id}:
+    get:
+      tags: [Préstamos]
+      summary: Obtener préstamo por ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Préstamo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prestamo'
+
+  /prestamos/{id}/resolver:
+    put:
+      tags: [Préstamos]
+      summary: Aprobar o rechazar préstamo
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolverPrestamoDTO'
+      responses:
+        '200':
+          description: Préstamo resuelto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prestamo'
+
+  /prestamos/{id}/desembolsar:
+    post:
+      tags: [Préstamos]
+      summary: Desembolsar préstamo aprobado
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_usuario_analista:
+                  type: integer
+              required: [id_usuario_analista]
+      responses:
+        '200':
+          description: Préstamo desembolsado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prestamo'
+
+  /transferencias:
+    get:
+      tags: [Transferencias]
+      summary: Listar transferencias
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: cuenta
+          in: query
+          schema:
+            type: string
+        - name: estado
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de transferencias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transferencia'
+    post:
+      tags: [Transferencias]
+      summary: Crear transferencia
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearTransferenciaDTO'
+      responses:
+        '201':
+          description: Transferencia creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transferencia'
+
+  /transferencias/{id}/resolver:
+    put:
+      tags: [Transferencias]
+      summary: Aprobar o rechazar transferencia empresarial
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolverTransferenciaDTO'
+      responses:
+        '200':
+          description: Transferencia resuelta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transferencia'
+
+  /transferencias/vencer:
+    post:
+      tags: [Transferencias]
+      summary: Vencer transferencias sin aprobación (60 min)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Transferencias vencidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_vencidas:
+                    type: integer
+
+  /bitacora:
+    get:
+      tags: [Bitácora]
+      summary: Listar eventos de bitácora
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: entidad
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Eventos de bitácora
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BitacoraOperacion'
+
+  /productos:
+    get:
+      tags: [Productos]
+      summary: Listar productos bancarios
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de productos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductoBancario'
+    post:
+      tags: [Productos]
+      summary: Crear producto bancario
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductoDTO'
+      responses:
+        '201':
+          description: Producto creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductoBancario'
+
+    ProductoBancario:
+      type: object
+      properties:
+        codigo_producto:
+          type: string
+        nombre_producto:
+          type: string
+        categoria:
+          type: string
+        requiere_aprobacion:
+          type: boolean
+      required: [codigo_producto, nombre_producto, categoria, requiere_aprobacion]
+
+    CreateProductoDTO:
+      type: object
+      properties:
+        codigo_producto:
+          type: string
+        nombre_producto:
+          type: string
+        categoria:
+          type: string
+        requiere_aprobacion:
+          type: boolean
+          default: false
+      required: [codigo_producto, nombre_producto, categoria]
+
+  /roles:
+    get:
+      tags: [Roles]
+      summary: Listar roles del sistema
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RolSistema'
+
+  /estados:
+    get:
+      tags: [Estados]
+      summary: Listar estados por tipo
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: tipo
+          in: query
+          schema:
+            type: string
+            enum: [USUARIO, CUENTA, PRESTAMO, TRANSFERENCIA]
+      responses:
+        '200':
+          description: Lista de estados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EstadoGeneral'
