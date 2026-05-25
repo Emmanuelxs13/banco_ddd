@@ -23,7 +23,7 @@ export interface ClienteEmpresa {
 export interface UsuarioSistema {
   id_usuario: number;
   id_relacionado: number;
-  tipo_relacion: 'PERSONA' | 'EMPRESA';
+  tipo_relacion: "PERSONA" | "EMPRESA";
   nombre_completo: string;
   id_identificacion: string;
   correo_electronico: string;
@@ -38,7 +38,7 @@ export interface CuentaBancaria {
   numero_cuenta: string;
   tipo_cuenta: string;
   id_titular: number;
-  tipo_titular: 'PERSONA' | 'EMPRESA';
+  tipo_titular: "PERSONA" | "EMPRESA";
   saldo_actual: number;
   moneda: string;
   id_estado: number;
@@ -51,7 +51,7 @@ export interface Prestamo {
   id_prestamo: number;
   tipo_prestamo: string;
   id_cliente_solicitante: number;
-  tipo_cliente: 'PERSONA' | 'EMPRESA';
+  tipo_cliente: "PERSONA" | "EMPRESA";
   monto_solicitado: number;
   monto_aprobado: number | null;
   tasa_interes: number;
@@ -98,6 +98,9 @@ export interface DashboardStats {
   saldo_total: number;
   prestamos_desembolsados: number;
   transferencias_ultimo_mes: number;
+  transferencias_por_mes?: { month: string; total: number }[];
+  cuentas_por_tipo?: { tipo: string; total: number }[];
+  prestamos_por_estado?: { estado: string; total: number }[];
 }
 
 export interface LoginResponse {
