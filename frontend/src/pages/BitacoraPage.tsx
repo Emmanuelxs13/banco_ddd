@@ -98,7 +98,7 @@ export function BitacoraPage() {
       render: (item: BitacoraOperacion) => (
         <button
           onClick={() => handleVerDetalle(item)}
-          className="text-indigo-600 hover:text-indigo-800 text-xs font-medium"
+          className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1 rounded-full text-xs font-medium transition-colors"
         >
           Ver detalle
         </button>

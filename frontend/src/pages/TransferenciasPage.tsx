@@ -133,7 +133,7 @@ export function TransferenciasPage() {
         <div>
           <button
             onClick={handleCrear}
-            className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
+            className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
           >
             Crear transferencia
           </button>

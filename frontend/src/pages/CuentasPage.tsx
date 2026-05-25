@@ -175,13 +175,13 @@ export function CuentasPage() {
         <div className="flex gap-2">
           <button
             onClick={() => handleEdit(item)}
-            className="text-indigo-600 hover:text-indigo-800 text-xs font-medium"
+            className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1 rounded-full text-xs font-medium transition-colors"
           >
             Editar
           </button>
           <button
             onClick={() => handleDelete(item)}
-            className="text-red-600 hover:text-red-800 text-xs font-medium"
+            className="bg-red-50 text-red-700 hover:bg-red-100 px-3 py-1 rounded-full text-xs font-medium transition-colors"
           >
             Eliminar
           </button>
@@ -199,7 +199,7 @@ export function CuentasPage() {
         <div>
           <button
             onClick={handleCreate}
-            className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
+            className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
           >
             Crear cuenta
           </button>

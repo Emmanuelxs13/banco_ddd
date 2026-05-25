@@ -243,13 +243,13 @@ export function PrestamosPage() {
         <div className="flex gap-2">
           <button
             onClick={() => handleResolver(item)}
-            className="text-indigo-600 hover:text-indigo-800 text-xs font-medium"
+            className="bg-amber-50 text-amber-700 hover:bg-amber-100 px-3 py-1 rounded-full text-xs font-medium transition-colors"
           >
             Resolver
           </button>
           <button
             onClick={() => handleDesembolsar(item)}
-            className="text-emerald-600 hover:text-emerald-800 text-xs font-medium"
+            className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-1 rounded-full text-xs font-medium transition-colors"
           >
             Desembolsar
           </button>
@@ -268,7 +268,7 @@ export function PrestamosPage() {
         <div>
           <button
             onClick={handleSolicitar}
-            className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
+            className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-1.5 rounded-full text-sm font-medium transition-colors"
           >
             Solicitar préstamo
           </button>

@@ -1,11 +1,8 @@
 import Swal from "sweetalert2";
 
 export const swalWithBootstrapButtons = Swal.mixin({
-  customClass: {
-    confirmButton: "btn btn-success",
-    cancelButton: "btn btn-danger",
-  },
-  buttonsStyling: false,
+  confirmButtonColor: "#22c55e",
+  cancelButtonColor: "#ef4444",
 });
 
 export const showSuccessAlert = (title: string, text: string) =>
