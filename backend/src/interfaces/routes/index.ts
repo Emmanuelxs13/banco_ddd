@@ -8,6 +8,7 @@ import { CuentaController } from "../controllers/CuentaController";
 import { PrestamoController } from "../controllers/PrestamoController";
 import { TransferenciaController } from "../controllers/TransferenciaController";
 import { BitacoraController } from "../controllers/BitacoraController";
+import { UsuarioController } from "../controllers/UsuarioController";
 
 export function createRouter(
   authCtrl: AuthController,
@@ -18,6 +19,7 @@ export function createRouter(
   prestamoCtrl: PrestamoController,
   transferenciaCtrl: TransferenciaController,
   bitacoraCtrl: BitacoraController,
+  usuarioCtrl: UsuarioController,
 ): Router {
   const router = Router();
 
@@ -98,6 +100,14 @@ export function createRouter(
   );
 
   router.get("/bitacora", authMiddleware, bitacoraCtrl.getAll);
+
+  router.get("/usuarios", authMiddleware, usuarioCtrl.getAll);
+  router.get("/usuarios/:id", authMiddleware, usuarioCtrl.getById);
+  router.post("/usuarios", authMiddleware, usuarioCtrl.create);
+  router.put("/usuarios/:id", authMiddleware, usuarioCtrl.update);
+  router.delete("/usuarios/:id", authMiddleware, usuarioCtrl.remove);
+  router.get("/auth/roles", authMiddleware, usuarioCtrl.getRoles);
+  router.get("/auth/estados-usuario", authMiddleware, usuarioCtrl.getEstadosUsuario);
 
   return router;
 }

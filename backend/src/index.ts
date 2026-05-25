@@ -25,6 +25,7 @@ import { CuentaController } from './interfaces/controllers/CuentaController';
 import { PrestamoController } from './interfaces/controllers/PrestamoController';
 import { TransferenciaController } from './interfaces/controllers/TransferenciaController';
 import { BitacoraController } from './interfaces/controllers/BitacoraController';
+import { UsuarioController } from './interfaces/controllers/UsuarioController';
 
 import { LoginUseCase } from './application/use-cases/LoginUseCase';
 import { UpdateProfileUseCase } from './application/use-cases/UpdateProfileUseCase';
@@ -34,6 +35,7 @@ import { ClienteEmpresaUseCase } from './application/use-cases/ClienteEmpresaUse
 import { CuentaUseCase } from './application/use-cases/CuentaUseCase';
 import { PrestamoUseCase } from './application/use-cases/PrestamoUseCase';
 import { TransferenciaUseCase } from './application/use-cases/TransferenciaUseCase';
+import { UsuarioUseCase } from './application/use-cases/UsuarioUseCase';
 import { PrestamoDomainService } from './domain/services/IPrestamoDomainService';
 import { TransferenciaDomainService } from './domain/services/ITransferenciaDomainService';
 
@@ -71,6 +73,7 @@ async function main() {
   const cuentaUseCase = new CuentaUseCase(cuentaRepo);
   const prestamoUseCase = new PrestamoUseCase(prestamoRepo, usuarioRepo, cuentaRepo, bitacoraRepo, prestamoDomainService);
   const transferenciaUseCase = new TransferenciaUseCase(transferenciaRepo, usuarioRepo, bitacoraRepo, transferenciaDomainService);
+  const usuarioUseCase = new UsuarioUseCase(usuarioRepo);
 
   const authCtrl = new AuthController(loginUseCase, updateProfileUseCase);
   const dashboardCtrl = new DashboardController(dashboardUseCase);
@@ -80,10 +83,11 @@ async function main() {
   const prestamoCtrl = new PrestamoController(prestamoUseCase);
   const transferenciaCtrl = new TransferenciaController(transferenciaUseCase);
   const bitacoraCtrl = new BitacoraController(bitacoraRepo);
+  const usuarioCtrl = new UsuarioController(usuarioUseCase);
 
   app.use('/api/v1', createRouter(
     authCtrl, dashboardCtrl, clientePersonaCtrl, clienteEmpresaCtrl,
-    cuentaCtrl, prestamoCtrl, transferenciaCtrl, bitacoraCtrl
+    cuentaCtrl, prestamoCtrl, transferenciaCtrl, bitacoraCtrl, usuarioCtrl
   ));
 
   app.use(errorMiddleware);

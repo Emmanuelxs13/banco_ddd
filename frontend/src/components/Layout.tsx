@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import {
   LayoutDashboard, Users, Building2, CreditCard,
   HandCoins, ArrowLeftRight, ScrollText, LogOut,
-  Menu, X, ChevronDown, Banknote
+  Menu, X, ChevronDown, Banknote, Shield
 } from 'lucide-react';
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { path: '/prestamos', label: 'Préstamos', icon: HandCoins },
   { path: '/transferencias', label: 'Transferencias', icon: ArrowLeftRight },
   { path: '/bitacora', label: 'Bitácora', icon: ScrollText },
+  { path: '/usuarios', label: 'Usuarios', icon: Shield },
 ];
 
 interface LayoutProps {

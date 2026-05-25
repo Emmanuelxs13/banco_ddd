@@ -73,6 +73,80 @@ export class UsuarioRepository implements IUsuarioRepository {
     return (await this.findById(result.rows[0].id_usuario))!;
   }
 
+  async update(id: number, data: {
+    nombre_completo?: string;
+    correo_electronico?: string;
+    telefono?: string | null;
+    id_rol?: number;
+    id_estado?: number;
+    contrasena?: string;
+  }): Promise<UsuarioSistema | null> {
+    const sets: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (data.nombre_completo !== undefined) {
+      sets.push(`nombre_completo = $${idx++}`);
+      values.push(data.nombre_completo);
+    }
+    if (data.correo_electronico !== undefined) {
+      sets.push(`correo_electronico = $${idx++}`);
+      values.push(data.correo_electronico);
+    }
+    if (data.telefono !== undefined) {
+      sets.push(`telefono = $${idx++}`);
+      values.push(data.telefono);
+    }
+    if (data.id_rol !== undefined) {
+      sets.push(`id_rol = $${idx++}`);
+      values.push(data.id_rol);
+    }
+    if (data.id_estado !== undefined) {
+      sets.push(`id_estado = $${idx++}`);
+      values.push(data.id_estado);
+    }
+    if (data.contrasena !== undefined) {
+      const hash = await bcrypt.hash(data.contrasena, 10);
+      sets.push(`contrasena_hash = $${idx++}`);
+      values.push(hash);
+    }
+
+    if (sets.length === 0) return this.findById(id);
+
+    values.push(id);
+    const query = `UPDATE public.usuario_sistema SET ${sets.join(', ')} WHERE id_usuario = $${idx}`;
+    const result = await db.query(query, values);
+    if (result.rowCount === 0) return null;
+    logger.info(`Usuario ${id} actualizado`);
+    return this.findById(id);
+  }
+
+  async delete(id: number): Promise<void> {
+    const result = await db.query(
+      `DELETE FROM public.usuario_sistema WHERE id_usuario = $1`,
+      [id]
+    );
+    if (result.rowCount === 0) {
+      logger.warn(`Intento de eliminar usuario inexistente: ${id}`);
+    } else {
+      logger.info(`Usuario ${id} eliminado`);
+    }
+  }
+
+  async findAllRoles(): Promise<{ id_rol: number; nombre_rol: string }[]> {
+    const result = await db.query(
+      'SELECT id_rol, nombre_rol FROM public.rol_sistema ORDER BY nombre_rol'
+    );
+    return result.rows;
+  }
+
+  async findAllEstadosUsuario(): Promise<{ id_estado: number; nombre_estado: string }[]> {
+    const result = await db.query(
+      "SELECT id_estado, nombre_estado FROM public.estado_general WHERE tipo_estado = 'USUARIO' ORDER BY nombre_estado"
+    );
+    return result.rows;
+  }
+
   private mapToEntity(row: any): UsuarioSistema {
     return new UsuarioSistema(
       row.id_usuario, row.id_relacionado, row.tipo_relacion,

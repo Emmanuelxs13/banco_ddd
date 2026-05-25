@@ -10,6 +10,7 @@ import { PrestamosPage } from './pages/PrestamosPage';
 import { TransferenciasPage } from './pages/TransferenciasPage';
 import { BitacoraPage } from './pages/BitacoraPage';
 import { PerfilPage } from './pages/PerfilPage';
+import { UsuariosPage } from './pages/UsuariosPage';
 
 function AppRoutes() {
   return (
@@ -23,6 +24,7 @@ function AppRoutes() {
       <Route path="/transferencias" element={<ProtectedRoute><TransferenciasPage /></ProtectedRoute>} />
       <Route path="/bitacora" element={<ProtectedRoute><BitacoraPage /></ProtectedRoute>} />
       <Route path="/perfil" element={<ProtectedRoute><PerfilPage /></ProtectedRoute>} />
+      <Route path="/usuarios" element={<ProtectedRoute><UsuariosPage /></ProtectedRoute>} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
