@@ -47,6 +47,16 @@ export class UsuarioRepository implements IUsuarioRepository {
     return result.rows.length ? this.mapToEntity(result.rows[0]) : null;
   }
 
+  async updateNombre(id: number, nombre_completo: string): Promise<UsuarioSistema | null> {
+    const result = await db.query(
+      `UPDATE public.usuario_sistema SET nombre_completo = $1 WHERE id_usuario = $2`,
+      [nombre_completo, id]
+    );
+    if (result.rowCount === 0) return null;
+    logger.info(`Usuario ${id} actualizó su nombre a: ${nombre_completo}`);
+    return this.findById(id);
+  }
+
   async create(usuario: Partial<UsuarioSistema> & { contrasena: string }): Promise<UsuarioSistema> {
     const hash = await bcrypt.hash(usuario.contrasena, 10);
     const result = await db.query(

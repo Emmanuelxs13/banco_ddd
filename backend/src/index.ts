@@ -27,6 +27,7 @@ import { TransferenciaController } from './interfaces/controllers/TransferenciaC
 import { BitacoraController } from './interfaces/controllers/BitacoraController';
 
 import { LoginUseCase } from './application/use-cases/LoginUseCase';
+import { UpdateProfileUseCase } from './application/use-cases/UpdateProfileUseCase';
 import { DashboardUseCase } from './application/use-cases/DashboardUseCase';
 import { ClientePersonaUseCase } from './application/use-cases/ClientePersonaUseCase';
 import { ClienteEmpresaUseCase } from './application/use-cases/ClienteEmpresaUseCase';
@@ -63,6 +64,7 @@ async function main() {
   const transferenciaDomainService = new TransferenciaDomainService();
 
   const loginUseCase = new LoginUseCase(usuarioRepo);
+  const updateProfileUseCase = new UpdateProfileUseCase(usuarioRepo);
   const dashboardUseCase = new DashboardUseCase();
   const clientePersonaUseCase = new ClientePersonaUseCase(clientePersonaRepo);
   const clienteEmpresaUseCase = new ClienteEmpresaUseCase(clienteEmpresaRepo);
@@ -70,7 +72,7 @@ async function main() {
   const prestamoUseCase = new PrestamoUseCase(prestamoRepo, usuarioRepo, cuentaRepo, bitacoraRepo, prestamoDomainService);
   const transferenciaUseCase = new TransferenciaUseCase(transferenciaRepo, usuarioRepo, bitacoraRepo, transferenciaDomainService);
 
-  const authCtrl = new AuthController(loginUseCase);
+  const authCtrl = new AuthController(loginUseCase, updateProfileUseCase);
   const dashboardCtrl = new DashboardController(dashboardUseCase);
   const clientePersonaCtrl = new ClientePersonaController(clientePersonaUseCase);
   const clienteEmpresaCtrl = new ClienteEmpresaController(clienteEmpresaUseCase);

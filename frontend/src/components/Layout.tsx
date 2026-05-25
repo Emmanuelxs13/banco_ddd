@@ -76,10 +76,10 @@ export function Layout({ children }: LayoutProps) {
               <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold text-white">
                 {usuario.nombre_completo.charAt(0)}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{usuario.nombre_completo}</p>
+              <Link to="/perfil" className="flex-1 min-w-0 group">
+                <p className="text-sm font-medium text-white truncate group-hover:text-blue-300 transition-colors">{usuario.nombre_completo}</p>
                 <p className="text-xs text-blue-300 truncate">{usuario.nombre_rol}</p>
-              </div>
+              </Link>
               <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-bank-600">
                 <LogOut className="w-4 h-4" />
               </button>

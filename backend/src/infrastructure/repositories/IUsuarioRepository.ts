@@ -5,4 +5,5 @@ export interface IUsuarioRepository {
   findById(id: number): Promise<UsuarioSistema | null>;
   findByCorreo(correo: string): Promise<UsuarioSistema | null>;
   create(usuario: Partial<UsuarioSistema> & { contrasena: string }): Promise<UsuarioSistema>;
+  updateNombre(id: number, nombre_completo: string): Promise<UsuarioSistema | null>;
 }

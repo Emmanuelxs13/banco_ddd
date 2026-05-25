@@ -9,6 +9,7 @@ import { CuentasPage } from './pages/CuentasPage';
 import { PrestamosPage } from './pages/PrestamosPage';
 import { TransferenciasPage } from './pages/TransferenciasPage';
 import { BitacoraPage } from './pages/BitacoraPage';
+import { PerfilPage } from './pages/PerfilPage';
 
 function AppRoutes() {
   return (
@@ -21,6 +22,7 @@ function AppRoutes() {
       <Route path="/prestamos" element={<ProtectedRoute><PrestamosPage /></ProtectedRoute>} />
       <Route path="/transferencias" element={<ProtectedRoute><TransferenciasPage /></ProtectedRoute>} />
       <Route path="/bitacora" element={<ProtectedRoute><BitacoraPage /></ProtectedRoute>} />
+      <Route path="/perfil" element={<ProtectedRoute><PerfilPage /></ProtectedRoute>} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

@@ -27,6 +27,7 @@ export function createRouter(
 
   router.post("/auth/login", authCtrl.login);
   router.get("/auth/me", authMiddleware, authCtrl.me);
+  router.put("/auth/perfil", authMiddleware, authCtrl.updateProfile);
 
   router.get("/dashboard", authMiddleware, dashboardCtrl.getStats);
 

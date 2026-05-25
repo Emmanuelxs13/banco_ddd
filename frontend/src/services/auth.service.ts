@@ -6,4 +6,9 @@ export const authService = {
     const { data } = await api.post('/auth/login', { correo, contrasena });
     return data;
   },
+
+  async updateProfile(nombre_completo: string) {
+    const { data } = await api.put('/auth/perfil', { nombre_completo });
+    return data;
+  },
 };
