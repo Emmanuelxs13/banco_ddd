@@ -90,10 +90,20 @@ export function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <p className="text-xs text-gray-500 text-center">
-              Usuarios de prueba: use cualquier usuario activo del sistema
+          <div className="mt-6 pt-4 border-t border-gray-100 space-y-2">
+            <p className="text-xs font-semibold text-gray-500 text-center uppercase tracking-wider">
+              Credenciales de prueba
             </p>
+            <div className="grid grid-cols-2 gap-1 text-[11px] text-gray-400">
+              <span className="text-gray-500 font-medium">admin@banco.com</span>
+              <span className="text-right font-mono">password123</span>
+              <span className="text-gray-500 font-medium">analista@banco.com</span>
+              <span className="text-right font-mono">password123</span>
+              <span className="text-gray-500 font-medium">supervisor@banco.com</span>
+              <span className="text-right font-mono">password123</span>
+              <span className="text-gray-500 font-medium">cliente@banco.com</span>
+              <span className="text-right font-mono">password123</span>
+            </div>
           </div>
         </div>
       </div>

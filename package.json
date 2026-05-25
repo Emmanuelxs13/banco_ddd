@@ -5,13 +5,16 @@
   "description": "Banco Core - Sistema de Gestión Bancaria con DDD + SDD + SOLID",
   "scripts": {
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "kill:ports": "powershell -ExecutionPolicy Bypass -File kill-ports.ps1",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev": "concurrently -k \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build:backend": "cd backend && npm run build",
     "build:frontend": "cd frontend && npm run build",
     "build": "npm run build:backend && npm run build:frontend",
-    "seed": "psql -U postgres -d banco_core -f seed_ddd_banco.sql"
+    "seed": "psql -U postgres -d banco_core -f seed_ddd_banco.sql",
+    "seed:comprehensive": "psql -U postgres -d banco_core -f seed_comprehensive.sql",
+    "restart": "npm run kill:ports && npm run dev"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"

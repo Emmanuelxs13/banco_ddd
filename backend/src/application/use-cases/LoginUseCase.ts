@@ -1,9 +1,10 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { IUsuarioRepository } from '../../infrastructure/repositories/IUsuarioRepository';
-import { config } from '../../shared/config';
-import { UnauthorizedError } from '../../shared/errors';
-import { LoginDTO, LoginResponseDTO } from '../dto/auth.dto';
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { IUsuarioRepository } from "../../infrastructure/repositories/IUsuarioRepository";
+import { config } from "../../shared/config";
+import { UnauthorizedError } from "../../shared/errors";
+import { logger } from "../../shared/logger";
+import { LoginDTO, LoginResponseDTO } from "../dto/auth.dto";
 
 export class LoginUseCase {
   constructor(private usuarioRepo: IUsuarioRepository) {}
@@ -11,16 +12,21 @@ export class LoginUseCase {
   async execute(dto: LoginDTO): Promise<LoginResponseDTO> {
     const usuario = await this.usuarioRepo.findByCorreo(dto.correo);
     if (!usuario) {
-      throw new UnauthorizedError('Credenciales inválidas');
+      logger.warn(`Login fallido: usuario no encontrado -> ${dto.correo}`);
+      throw new UnauthorizedError("Credenciales inválidas");
     }
 
-    if (usuario.nombre_estado !== 'ACTIVO') {
-      throw new UnauthorizedError('Usuario no está activo');
+    if (usuario.nombre_estado !== "ACTIVO") {
+      throw new UnauthorizedError("Usuario no está activo");
     }
 
-    const validPassword = await bcrypt.compare(dto.contrasena, usuario.contrasena_hash || '');
+    const validPassword = await bcrypt.compare(
+      dto.contrasena,
+      usuario.contrasena_hash || "",
+    );
     if (!validPassword) {
-      throw new UnauthorizedError('Credenciales inválidas');
+      logger.warn(`Login fallido: contraseña inválida para -> ${dto.correo}`);
+      throw new UnauthorizedError("Credenciales inválidas");
     }
 
     const payload = {

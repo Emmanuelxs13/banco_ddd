@@ -86,10 +86,26 @@ async function main() {
 
   app.use(errorMiddleware);
 
-  app.listen(config.PORT, () => {
-    logger.info(`Banco Core API corriendo en puerto ${config.PORT}`);
-    logger.info(`Documentación API: http://localhost:${config.PORT}/api/v1/health`);
-  });
+  function startServer(port: number) {
+    const server = app.listen(port);
+    server.on('listening', () => {
+      const actualPort = (server.address() as any).port;
+      config.PORT = actualPort;
+      logger.info(`Banco Core API corriendo en puerto ${actualPort}`);
+      logger.info(`Health: http://localhost:${actualPort}/api/v1/health`);
+    });
+    server.on('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'EADDRINUSE') {
+        logger.warn(`Puerto ${port} ocupado, intentando ${port + 1}...`);
+        startServer(port + 1);
+      } else {
+        logger.error('Error al iniciar servidor', err);
+        process.exit(1);
+      }
+    });
+  }
+
+  startServer(config.PORT);
 }
 
 main().catch((err) => {
