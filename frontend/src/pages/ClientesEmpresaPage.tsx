@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import { clientesService } from "../services/clientes.service";
 import { DataTable } from "../components/DataTable";
 import { ClienteEmpresa } from "../types";
+import Swal from "sweetalert2";
+import {
+  showDeleteConfirm,
+  showErrorAlert,
+  showSuccessAlert,
+} from "../utils/swal";
 
 export function ClientesEmpresaPage() {
   const [empresas, setEmpresas] = useState<ClienteEmpresa[]>([]);
@@ -27,44 +33,96 @@ export function ClientesEmpresaPage() {
       .finally(() => setLoading(false));
   };
 
+  const formHtml = (item?: ClienteEmpresa) => `
+    <div style="display:grid;gap:10px;text-align:left">
+      <input id="ce_nit" class="swal2-input" placeholder="NIT" value="${item?.nit ?? ""}">
+      <input id="ce_razon_social" class="swal2-input" placeholder="Razón social" value="${item?.razon_social ?? ""}">
+      <input id="ce_correo_electronico" class="swal2-input" placeholder="Correo electrónico" value="${item?.correo_electronico ?? ""}">
+      <input id="ce_telefono" class="swal2-input" placeholder="Teléfono" value="${item?.telefono ?? ""}">
+      <input id="ce_direccion" class="swal2-input" placeholder="Dirección" value="${item?.direccion ?? ""}">
+      <input id="ce_representante_legal_id" type="number" class="swal2-input" placeholder="ID representante legal" value="${item?.representante_legal_id ?? ""}">
+      <input id="ce_ciudad" class="swal2-input" placeholder="Ciudad" value="${item?.ciudad ?? ""}">
+    </div>
+  `;
+
+  const getInputValue = (id: string) =>
+    (
+      Swal.getPopup()?.querySelector(`#${id}`) as HTMLInputElement | null
+    )?.value?.trim() || "";
+
+  const openEmpresaModal = async (item?: ClienteEmpresa) => {
+    return (await Swal.fire({
+      title: item ? "Editar empresa" : "Crear empresa",
+      html: formHtml(item),
+      showCancelButton: true,
+      confirmButtonText: item ? "Guardar cambios" : "Crear empresa",
+      cancelButtonText: "Cancelar",
+      focusConfirm: false,
+      preConfirm: () => ({
+        nit: getInputValue("ce_nit"),
+        razon_social: getInputValue("ce_razon_social"),
+        correo_electronico: getInputValue("ce_correo_electronico"),
+        telefono: getInputValue("ce_telefono"),
+        direccion: getInputValue("ce_direccion"),
+        representante_legal_id: parseInt(
+          getInputValue("ce_representante_legal_id") || "0",
+        ),
+        ciudad: getInputValue("ce_ciudad"),
+      }),
+    })) as any;
+  };
+
   const handleCreate = async () => {
-    const nit = window.prompt("NIT");
-    if (!nit) return;
-    const razon = window.prompt("Razón social");
+    const result = await openEmpresaModal();
+    if (!result.isConfirmed || !result.value) return;
     try {
-      await clientesService.createEmpresa({
-        nit,
-        razon_social: razon || "",
-        correo_electronico: "",
-        telefono: "",
-        direccion: "",
-      });
+      await clientesService.createEmpresa(result.value);
+      await showSuccessAlert(
+        "Empresa creada",
+        "La empresa fue creada correctamente.",
+      );
       refresh();
     } catch (err: any) {
-      alert(err.response?.data?.message || "Error creando empresa");
+      await showErrorAlert(
+        "Error",
+        err.response?.data?.message || "Error creando empresa",
+      );
     }
   };
 
   const handleEdit = async (item: ClienteEmpresa) => {
-    const razon = window.prompt("Razón social", item.razon_social);
-    if (!razon) return;
+    const result = await openEmpresaModal(item);
+    if (!result.isConfirmed || !result.value) return;
     try {
-      await clientesService.updateEmpresa(item.id_empresa, {
-        razon_social: razon,
-      });
+      await clientesService.updateEmpresa(item.id_empresa, result.value);
+      await showSuccessAlert(
+        "Empresa actualizada",
+        "La empresa fue actualizada correctamente.",
+      );
       refresh();
     } catch (err: any) {
-      alert("Error actualizando empresa");
+      await showErrorAlert(
+        "Error",
+        err.response?.data?.message || "Error actualizando empresa",
+      );
     }
   };
 
   const handleDelete = async (item: ClienteEmpresa) => {
-    if (!confirm("Eliminar empresa " + item.razon_social + "?")) return;
+    const result = await showDeleteConfirm(`la empresa ${item.razon_social}`);
+    if (!result.isConfirmed) return;
     try {
       await clientesService.deleteEmpresa(item.id_empresa);
+      await showSuccessAlert(
+        "Eliminada",
+        "La empresa fue eliminada correctamente.",
+      );
       refresh();
     } catch (err: any) {
-      alert("Error eliminando empresa");
+      await showErrorAlert(
+        "Error",
+        err.response?.data?.message || "Error eliminando empresa",
+      );
     }
   };
 

@@ -3,6 +3,12 @@ import { prestamosService } from "../services/prestamos.service";
 import { DataTable } from "../components/DataTable";
 import { StatusBadge } from "../components/StatusBadge";
 import { Prestamo } from "../types";
+import Swal from "sweetalert2";
+import {
+  showDeleteConfirm,
+  showErrorAlert,
+  showSuccessAlert,
+} from "../utils/swal";
 
 export function PrestamosPage() {
   const [prestamos, setPrestamos] = useState<Prestamo[]>([]);
@@ -28,45 +34,160 @@ export function PrestamosPage() {
       .finally(() => setLoading(false));
   };
 
+  const currentUserId = () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("usuario") || "null");
+      return user?.id_usuario ? Number(user.id_usuario) : 1;
+    } catch {
+      return 1;
+    }
+  };
+
+  const formHtml = (item?: Prestamo) => `
+    <div style="display:grid;gap:10px;text-align:left">
+      <input id="prestamo_tipo" class="swal2-input" placeholder="Tipo de préstamo" value="${item?.tipo_prestamo ?? ""}">
+      <select id="prestamo_tipo_cliente" class="swal2-input">
+        <option value="PERSONA" ${item?.tipo_cliente === "PERSONA" ? "selected" : ""}>PERSONA</option>
+        <option value="EMPRESA" ${item?.tipo_cliente === "EMPRESA" ? "selected" : ""}>EMPRESA</option>
+      </select>
+      <input id="prestamo_cliente" type="number" class="swal2-input" placeholder="ID cliente solicitante" value="${item?.id_cliente_solicitante ?? ""}">
+      <input id="prestamo_monto" type="number" class="swal2-input" placeholder="Monto solicitado" value="${item?.monto_solicitado ?? ""}">
+      <input id="prestamo_tasa" type="number" step="0.01" class="swal2-input" placeholder="Tasa de interés" value="${item?.tasa_interes ?? ""}">
+      <input id="prestamo_plazo" type="number" class="swal2-input" placeholder="Plazo en meses" value="${item?.plazo_meses ?? ""}">
+      <input id="prestamo_cuenta_destino" class="swal2-input" placeholder="Cuenta destino desembolso" value="${item?.cuenta_destino_desembolso ?? ""}">
+    </div>
+  `;
+
+  const getInputValue = (id: string) =>
+    (
+      Swal.getPopup()?.querySelector(`#${id}`) as
+        | HTMLInputElement
+        | HTMLSelectElement
+        | null
+    )?.value?.trim() || "";
+
+  const openPrestamoModal = async (item?: Prestamo) => {
+    return (await Swal.fire({
+      title: item ? "Editar préstamo" : "Solicitar préstamo",
+      html: formHtml(item),
+      showCancelButton: true,
+      confirmButtonText: item ? "Guardar cambios" : "Solicitar préstamo",
+      cancelButtonText: "Cancelar",
+      focusConfirm: false,
+      preConfirm: () => ({
+        tipo_prestamo: getInputValue("prestamo_tipo"),
+        tipo_cliente: getInputValue("prestamo_tipo_cliente") || "PERSONA",
+        id_cliente_solicitante: parseInt(
+          getInputValue("prestamo_cliente") || "0",
+        ),
+        monto_solicitado: parseFloat(getInputValue("prestamo_monto") || "0"),
+        tasa_interes: parseFloat(getInputValue("prestamo_tasa") || "0"),
+        plazo_meses: parseInt(getInputValue("prestamo_plazo") || "0"),
+        cuenta_destino_desembolso: getInputValue("prestamo_cuenta_destino"),
+      }),
+    })) as any;
+  };
+
   const handleSolicitar = async () => {
-    const tipo = window.prompt("Tipo préstamo");
-    if (!tipo) return;
-    const monto = parseFloat(window.prompt("Monto") || "0");
-    const idCliente = parseInt(window.prompt("ID cliente") || "0");
+    const result = await openPrestamoModal();
+    if (!result.isConfirmed || !result.value) return;
     try {
       await prestamosService.solicitar({
-        tipo_prestamo: tipo,
-        id_cliente_solicitante: idCliente,
-        tipo_cliente: "PERSONA",
-        monto_solicitado: monto,
+        ...result.value,
+        id_usuario_creador: currentUserId(),
       });
+      await showSuccessAlert(
+        "Solicitud creada",
+        "El préstamo fue solicitado correctamente.",
+      );
       refresh();
-    } catch {
-      alert("Error solicitando");
+    } catch (err: any) {
+      await showErrorAlert(
+        "Error",
+        err.response?.data?.message || "Error solicitando",
+      );
     }
   };
 
   const handleResolver = async (item: Prestamo) => {
-    const aprobar = confirm("Aprobar préstamo?");
+    const result = (await Swal.fire({
+      title: "Resolver préstamo",
+      html: `
+        <div style="display:grid;gap:10px;text-align:left">
+          <select id="res_prestamo_accion" class="swal2-input">
+            <option value="aprobar">Aprobar</option>
+            <option value="rechazar">Rechazar</option>
+          </select>
+          <input id="res_prestamo_monto" type="number" step="0.01" class="swal2-input" placeholder="Monto aprobado" value="${item.monto_solicitado}">
+        </div>
+      `,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Procesar",
+      cancelButtonText: "Cancelar",
+      focusConfirm: false,
+      preConfirm: () => ({
+        accion:
+          (
+            Swal.getPopup()?.querySelector(
+              "#res_prestamo_accion",
+            ) as HTMLSelectElement | null
+          )?.value || "aprobar",
+        monto_aprobado: parseFloat(
+          (
+            Swal.getPopup()?.querySelector(
+              "#res_prestamo_monto",
+            ) as HTMLInputElement | null
+          )?.value || "0",
+        ),
+      }),
+    })) as any;
+
+    if (!result.isConfirmed || !result.value) return;
+
+    const aprobar = result.value.accion === "aprobar";
     try {
       await prestamosService.resolver(item.id_prestamo, {
-        id_usuario_aprobador: 1,
+        id_usuario_aprobador: currentUserId(),
         aprobar,
-        monto_aprobado: aprobar ? item.monto_solicitado : undefined,
+        monto_aprobado: aprobar ? result.value.monto_aprobado : undefined,
       });
+      await showSuccessAlert(
+        "Préstamo procesado",
+        aprobar ? "El préstamo fue aprobado." : "El préstamo fue rechazado.",
+      );
       refresh();
-    } catch {
-      alert("Error resolviendo");
+    } catch (err: any) {
+      await showErrorAlert(
+        "Error",
+        err.response?.data?.message || "Error resolviendo",
+      );
     }
   };
 
   const handleDesembolsar = async (item: Prestamo) => {
-    if (!confirm("Desembolsar préstamo?")) return;
+    const result = await Swal.fire({
+      title: "¿Desembolsar préstamo?",
+      text: `Se desembolsarán ${formatCurrency(item.monto_aprobado || item.monto_solicitado)} a la cuenta ${item.cuenta_destino_desembolso}.`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sí, desembolsar",
+      cancelButtonText: "Cancelar",
+      reverseButtons: true,
+    });
+    if (!result.isConfirmed) return;
     try {
-      await prestamosService.desembolsar(item.id_prestamo, 1);
+      await prestamosService.desembolsar(item.id_prestamo, currentUserId());
+      await showSuccessAlert(
+        "Desembolsado",
+        "El préstamo fue desembolsado correctamente.",
+      );
       refresh();
-    } catch {
-      alert("Error desembolsando");
+    } catch (err: any) {
+      await showErrorAlert(
+        "Error",
+        err.response?.data?.message || "Error desembolsando",
+      );
     }
   };
 

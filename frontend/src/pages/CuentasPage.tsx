@@ -3,6 +3,12 @@ import { cuentasService } from "../services/cuentas.service";
 import { DataTable } from "../components/DataTable";
 import { StatusBadge } from "../components/StatusBadge";
 import { CuentaBancaria } from "../types";
+import Swal from "sweetalert2";
+import {
+  showDeleteConfirm,
+  showErrorAlert,
+  showSuccessAlert,
+} from "../utils/swal";
 
 export function CuentasPage() {
   const [cuentas, setCuentas] = useState<CuentaBancaria[]>([]);
@@ -28,44 +34,101 @@ export function CuentasPage() {
       .finally(() => setLoading(false));
   };
 
+  const formHtml = (item?: CuentaBancaria) => `
+    <div style="display:grid;gap:10px;text-align:left">
+      ${item ? `<input id="cuenta_numero" class="swal2-input" placeholder="Número de cuenta" value="${item.numero_cuenta}" disabled>` : `<input id="cuenta_numero" class="swal2-input" placeholder="Número de cuenta" value="">`}
+      <input id="cuenta_tipo" class="swal2-input" placeholder="Tipo de cuenta" value="${item?.tipo_cuenta ?? ""}">
+      <input id="cuenta_titular" type="number" class="swal2-input" placeholder="ID titular" value="${item?.id_titular ?? ""}">
+      <select id="cuenta_tipo_titular" class="swal2-input">
+        <option value="PERSONA" ${item?.tipo_titular === "PERSONA" ? "selected" : ""}>PERSONA</option>
+        <option value="EMPRESA" ${item?.tipo_titular === "EMPRESA" ? "selected" : ""}>EMPRESA</option>
+      </select>
+      <input id="cuenta_moneda" class="swal2-input" placeholder="Moneda" value="${item?.moneda ?? "COP"}">
+      <input id="cuenta_codigo_producto" class="swal2-input" placeholder="Código producto" value="${item?.codigo_producto ?? ""}">
+    </div>
+  `;
+
+  const getInputValue = (id: string) =>
+    (
+      Swal.getPopup()?.querySelector(`#${id}`) as
+        | HTMLInputElement
+        | HTMLSelectElement
+        | null
+    )?.value?.trim() || "";
+
+  const openCuentaModal = async (item?: CuentaBancaria) => {
+    return (await Swal.fire({
+      title: item ? "Editar cuenta" : "Crear cuenta",
+      html: formHtml(item),
+      showCancelButton: true,
+      confirmButtonText: item ? "Guardar cambios" : "Crear cuenta",
+      cancelButtonText: "Cancelar",
+      focusConfirm: false,
+      preConfirm: () => {
+        const payload: any = {
+          tipo_cuenta: getInputValue("cuenta_tipo"),
+          id_titular: parseInt(getInputValue("cuenta_titular") || "0"),
+          tipo_titular: getInputValue("cuenta_tipo_titular") || "PERSONA",
+          moneda: getInputValue("cuenta_moneda") || "COP",
+          codigo_producto: getInputValue("cuenta_codigo_producto"),
+        };
+        if (!item) payload.numero_cuenta = getInputValue("cuenta_numero");
+        return payload;
+      },
+    })) as any;
+  };
+
   const handleCreate = async () => {
-    const numero = window.prompt("Número de cuenta");
-    if (!numero) return;
-    const tipo =
-      window.prompt("Tipo de cuenta (AHORROS/CORRIENTE)") || "AHORROS";
-    const titularId = parseInt(window.prompt("ID titular (numero)") || "0");
+    const result = await openCuentaModal();
+    if (!result.isConfirmed || !result.value) return;
     try {
-      await cuentasService.create({
-        numero_cuenta: numero,
-        tipo_cuenta: tipo,
-        id_titular: titularId,
-        tipo_titular: "PERSONA",
-        moneda: "COP",
-      });
+      await cuentasService.create(result.value);
+      await showSuccessAlert(
+        "Cuenta creada",
+        "La cuenta fue creada correctamente.",
+      );
       refresh();
     } catch (err: any) {
-      alert("Error creando cuenta");
+      await showErrorAlert(
+        "Error",
+        err.response?.data?.message || "Error creando cuenta",
+      );
     }
   };
 
   const handleEdit = async (item: CuentaBancaria) => {
-    const tipo =
-      window.prompt("Tipo de cuenta", item.tipo_cuenta) || item.tipo_cuenta;
+    const result = await openCuentaModal(item);
+    if (!result.isConfirmed || !result.value) return;
     try {
-      await cuentasService.update(item.numero_cuenta, { tipo_cuenta: tipo });
+      await cuentasService.update(item.numero_cuenta, result.value);
+      await showSuccessAlert(
+        "Cuenta actualizada",
+        "La cuenta fue actualizada correctamente.",
+      );
       refresh();
     } catch (err: any) {
-      alert("Error actualizando cuenta");
+      await showErrorAlert(
+        "Error",
+        err.response?.data?.message || "Error actualizando cuenta",
+      );
     }
   };
 
   const handleDelete = async (item: CuentaBancaria) => {
-    if (!confirm("Eliminar cuenta " + item.numero_cuenta + "?")) return;
+    const result = await showDeleteConfirm(`la cuenta ${item.numero_cuenta}`);
+    if (!result.isConfirmed) return;
     try {
       await cuentasService.delete(item.numero_cuenta);
+      await showSuccessAlert(
+        "Cuenta eliminada",
+        "La cuenta fue eliminada correctamente.",
+      );
       refresh();
-    } catch {
-      alert("Error eliminando cuenta");
+    } catch (err: any) {
+      await showErrorAlert(
+        "Error",
+        err.response?.data?.message || "Error eliminando cuenta",
+      );
     }
   };
 
