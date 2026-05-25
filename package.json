@@ -12,8 +12,8 @@
     "build:backend": "cd backend && npm run build",
     "build:frontend": "cd frontend && npm run build",
     "build": "npm run build:backend && npm run build:frontend",
-    "seed": "psql -U postgres -d banco_core -f seed_ddd_banco.sql",
-    "seed:comprehensive": "psql -U postgres -d banco_core -f seed_comprehensive.sql",
+    "seed": "psql -U postgres -d banco_core -f Database/seed_ddd_banco.sql",
+    "seed:all": "psql -U postgres -d banco_core -f Database/banco_db.sql && psql -U postgres -d banco_core -f Database/ddd_banco_pgadmin.sql && psql -U postgres -d banco_core -f Database/seed_ddd_banco.sql",
     "restart": "npm run kill:ports && npm run dev"
   },
   "devDependencies": {
