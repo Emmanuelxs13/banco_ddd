@@ -17,4 +17,5 @@ export interface IUsuarioRepository {
   delete(id: number): Promise<void>;
   findAllRoles(): Promise<{ id_rol: number; nombre_rol: string }[]>;
   findAllEstadosUsuario(): Promise<{ id_estado: number; nombre_estado: string }[]>;
+  findRolByName(nombre: string): Promise<{ id_rol: number; nombre_rol: string } | null>;
 }

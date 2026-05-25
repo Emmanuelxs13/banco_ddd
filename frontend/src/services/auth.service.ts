@@ -11,4 +11,17 @@ export const authService = {
     const { data } = await api.put('/auth/perfil', { nombre_completo });
     return data;
   },
+
+  async register(payload: {
+    numero_identificacion: string;
+    nombre_completo: string;
+    correo_electronico: string;
+    telefono: string;
+    fecha_nacimiento: string;
+    direccion: string;
+    contrasena: string;
+  }): Promise<LoginResponse> {
+    const { data } = await api.post('/auth/register', payload);
+    return data;
+  },
 };

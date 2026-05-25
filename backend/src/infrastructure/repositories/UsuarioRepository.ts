@@ -140,6 +140,14 @@ export class UsuarioRepository implements IUsuarioRepository {
     return result.rows;
   }
 
+  async findRolByName(nombre: string): Promise<{ id_rol: number; nombre_rol: string } | null> {
+    const result = await db.query(
+      'SELECT id_rol, nombre_rol FROM public.rol_sistema WHERE nombre_rol = $1',
+      [nombre]
+    );
+    return result.rows.length ? result.rows[0] : null;
+  }
+
   async findAllEstadosUsuario(): Promise<{ id_estado: number; nombre_estado: string }[]> {
     const result = await db.query(
       "SELECT id_estado, nombre_estado FROM public.estado_general WHERE tipo_estado = 'USUARIO' ORDER BY nombre_estado"

@@ -28,6 +28,7 @@ import { BitacoraController } from './interfaces/controllers/BitacoraController'
 import { UsuarioController } from './interfaces/controllers/UsuarioController';
 
 import { LoginUseCase } from './application/use-cases/LoginUseCase';
+import { RegisterUseCase } from './application/use-cases/RegisterUseCase';
 import { UpdateProfileUseCase } from './application/use-cases/UpdateProfileUseCase';
 import { DashboardUseCase } from './application/use-cases/DashboardUseCase';
 import { ClientePersonaUseCase } from './application/use-cases/ClientePersonaUseCase';
@@ -66,6 +67,7 @@ async function main() {
   const transferenciaDomainService = new TransferenciaDomainService();
 
   const loginUseCase = new LoginUseCase(usuarioRepo);
+  const registerUseCase = new RegisterUseCase(clientePersonaRepo, usuarioRepo);
   const updateProfileUseCase = new UpdateProfileUseCase(usuarioRepo);
   const dashboardUseCase = new DashboardUseCase();
   const clientePersonaUseCase = new ClientePersonaUseCase(clientePersonaRepo);
@@ -75,7 +77,7 @@ async function main() {
   const transferenciaUseCase = new TransferenciaUseCase(transferenciaRepo, usuarioRepo, bitacoraRepo, transferenciaDomainService);
   const usuarioUseCase = new UsuarioUseCase(usuarioRepo);
 
-  const authCtrl = new AuthController(loginUseCase, updateProfileUseCase);
+  const authCtrl = new AuthController(loginUseCase, updateProfileUseCase, registerUseCase);
   const dashboardCtrl = new DashboardController(dashboardUseCase);
   const clientePersonaCtrl = new ClientePersonaController(clientePersonaUseCase);
   const clienteEmpresaCtrl = new ClienteEmpresaController(clienteEmpresaUseCase);

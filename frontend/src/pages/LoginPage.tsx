@@ -97,12 +97,7 @@ export function LoginPage() {
             <div className="grid grid-cols-2 gap-1 text-[11px] text-gray-400">
               <span className="text-gray-500 font-medium">admin@banco.com</span>
               <span className="text-right font-mono">password123</span>
-              <span className="text-gray-500 font-medium">analista@banco.com</span>
-              <span className="text-right font-mono">password123</span>
-              <span className="text-gray-500 font-medium">supervisor@banco.com</span>
-              <span className="text-right font-mono">password123</span>
-              <span className="text-gray-500 font-medium">cliente@banco.com</span>
-              <span className="text-right font-mono">password123</span>
+         
             </div>
           </div>
         </div>
