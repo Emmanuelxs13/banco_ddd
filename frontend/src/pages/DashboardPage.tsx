@@ -25,9 +25,12 @@ import {
   BarChart,
   Bar,
 } from "recharts";
+import { AreaChart, Area, CartesianGrid, Brush, Label } from "recharts";
 
 export function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [monthsRange, setMonthsRange] = useState<number>(6);
+  const [topN, setTopN] = useState<number>(5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,6 +69,28 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-end gap-4">
+        <label className="text-sm text-gray-600">Rango meses:</label>
+        <select
+          value={monthsRange}
+          onChange={(e) => setMonthsRange(parseInt(e.target.value))}
+          className="border rounded px-2 py-1"
+        >
+          <option value={3}>3 meses</option>
+          <option value={6}>6 meses</option>
+          <option value={12}>12 meses</option>
+        </select>
+
+        <label className="text-sm text-gray-600">Top cuentas:</label>
+        <input
+          type="number"
+          value={topN}
+          min={1}
+          max={20}
+          onChange={(e) => setTopN(parseInt(e.target.value || "5"))}
+          className="w-16 border rounded px-2 py-1"
+        />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Clientes"
@@ -148,7 +173,10 @@ export function DashboardPage() {
           </h4>
           <div style={{ width: "100%", height: 240 }}>
             <ResponsiveContainer>
-              <LineChart data={stats?.transferencias_por_mes || []}>
+              <LineChart
+                data={(stats?.transferencias_por_mes || []).slice(-monthsRange)}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip />
@@ -159,6 +187,7 @@ export function DashboardPage() {
                   strokeWidth={2}
                   dot={{ r: 3 }}
                 />
+                <Brush dataKey="month" height={20} stroke="#2563eb" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -172,7 +201,7 @@ export function DashboardPage() {
             <ResponsiveContainer>
               <PieChart>
                 <Pie
-                  data={stats?.cuentas_por_tipo || []}
+                  data={(stats?.cuentas_por_tipo || []).slice(0, 10)}
                   dataKey="total"
                   nameKey="tipo"
                   outerRadius={80}
@@ -208,6 +237,105 @@ export function DashboardPage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <h4 className="text-sm font-medium text-gray-600 mb-2">
+            Nuevos clientes (últimos meses)
+          </h4>
+          <div style={{ width: "100%", height: 220 }}>
+            <ResponsiveContainer>
+              <AreaChart
+                data={(stats?.monthly_new_clients || []).slice(-monthsRange)}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Area
+                  type="monotone"
+                  dataKey="total"
+                  stroke="#06b6d4"
+                  fill="#cffafe"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <h4 className="text-sm font-medium text-gray-600 mb-2">
+            Top cuentas por saldo
+          </h4>
+          <div style={{ width: "100%", height: 220 }}>
+            <ResponsiveContainer>
+              <BarChart
+                data={(stats?.top_accounts_by_balance || []).slice(0, topN)}
+                layout="vertical"
+              >
+                <XAxis type="number" />
+                <YAxis dataKey="numero_cuenta" type="category" width={120} />
+                <Tooltip
+                  formatter={(value: any) =>
+                    new Intl.NumberFormat("es-CO", {
+                      style: "currency",
+                      currency: "COP",
+                    }).format(value)
+                  }
+                />
+                <Bar dataKey="saldo" fill="#60a5fa" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <h4 className="text-sm font-medium text-gray-600 mb-2">
+            Transferencias por hora (últimos 7 días)
+          </h4>
+          <div style={{ width: "100%", height: 220 }}>
+            <ResponsiveContainer>
+              <BarChart data={stats?.transfers_by_hour || []}>
+                <XAxis dataKey="hour" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="total" fill="#f59e0b" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <h4 className="text-sm font-medium text-gray-600 mb-2">
+          Préstamos por producto
+        </h4>
+        <div style={{ width: "100%", height: 260 }}>
+          <ResponsiveContainer>
+            <PieChart>
+              <Pie
+                data={stats?.prestamos_por_producto || []}
+                dataKey="total"
+                nameKey="producto"
+                outerRadius={100}
+              >
+                {(stats?.prestamos_por_producto || []).map((entry, index) => (
+                  <Cell
+                    key={`pp-${index}`}
+                    fill={
+                      ["#ef4444", "#f97316", "#f59e0b", "#60a5fa", "#34d399"][
+                        index % 5
+                      ]
+                    }
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>

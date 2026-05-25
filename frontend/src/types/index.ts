@@ -101,6 +101,10 @@ export interface DashboardStats {
   transferencias_por_mes?: { month: string; total: number }[];
   cuentas_por_tipo?: { tipo: string; total: number }[];
   prestamos_por_estado?: { estado: string; total: number }[];
+  monthly_new_clients?: { month: string; total: number }[];
+  top_accounts_by_balance?: { numero_cuenta: string; saldo: number }[];
+  transfers_by_hour?: { hour: number; total: number }[];
+  prestamos_por_producto?: { producto: string; total: number }[];
 }
 
 export interface LoginResponse {
