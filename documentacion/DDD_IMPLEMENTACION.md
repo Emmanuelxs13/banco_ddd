@@ -103,3 +103,4 @@ Implementados en `ddd_banco_pgadmin.sql`:
 - Esta implementación convierte la BD en **componente activo de negocio**, no solo repositorio.
 - Los procedimientos definen casos de uso de dominio; los triggers blindan invariantes ante cualquier DML.
 - Se mantiene normalización y trazabilidad transaccional/auditable en SQL.
+
