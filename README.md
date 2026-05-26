@@ -1,3 +1,6 @@
+_Banco Core — Emmanuel Berrio Jimenez y Juan Esteban Correo| ET0062 Bases de Datos II | Grupo 800
+
+
 # Banco Core DDD
 
 Sistema bancario construido con Domain-Driven Design, Node.js + Express + TypeScript (backend) y React + Vite + TailwindCSS (frontend), sobre PostgreSQL.
@@ -1000,5 +1003,4 @@ Si deseas repetir el flujo completo desde cero, crea una base nueva y vuelve a e
 
 ---
 
-_Banco Core — Emmanuel Berrio Jimenez | ET0062 Bases de Datos II | Grupo 800_
 
